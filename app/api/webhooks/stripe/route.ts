@@ -86,6 +86,17 @@ export async function POST(req: Request) {
   if (!project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
+  if (
+    project.source !== "civicledger_native" ||
+    !project.contract_address ||
+    !project.chain ||
+    !project.stablecoin
+  ) {
+    return NextResponse.json(
+      { error: "Project is not a native CivicLedger project" },
+      { status: 409 },
+    );
+  }
 
   // Atomic bump via SECURITY DEFINER function
   await admin.rpc("bump_project_totals", {

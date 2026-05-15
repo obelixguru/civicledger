@@ -6,6 +6,7 @@ import type {
   LedgerEventType,
   ProjectCategory,
   ProjectRow,
+  ProjectSource,
   ProjectStatus,
   StablecoinName,
 } from "@/lib/supabase/types";
@@ -16,20 +17,31 @@ export type Project = {
   tagline: string;
   category: ProjectCategory;
   imageUrl: string;
+  source: ProjectSource;
   association: {
+    slug: string;
     name: string;
     verified: boolean;
     sinceYear: number;
     location: string;
+    website: string | null;
+    trustScore: number | null;
+    overallScore: number | null;
+    grade: string | null;
+    donEnConfiance: boolean;
   };
   goal: number;
   raised: number;
   donors: number;
   daysLeft: number;
   transparencyScore: number;
-  contractAddress: string;
-  chain: ChainName;
-  stablecoin: StablecoinName;
+  // On-chain (only for civicledger_native)
+  contractAddress: string | null;
+  chain: ChainName | null;
+  stablecoin: StablecoinName | null;
+  // External (only for external_showcase)
+  externalUrl: string | null;
+  externalDonationMethod: string | null;
   status: ProjectStatus;
 };
 
@@ -45,7 +57,19 @@ export type LedgerEvent = {
 };
 
 type ProjectWithAssoc = ProjectRow & {
-  associations: Pick<AssociationRow, "name" | "verified" | "since_year" | "location"> | null;
+  associations: Pick<
+    AssociationRow,
+    | "slug"
+    | "name"
+    | "verified"
+    | "since_year"
+    | "location"
+    | "website"
+    | "trust_score"
+    | "overall_score"
+    | "grade"
+    | "don_en_confiance"
+  > | null;
 };
 
 function mapProject(row: ProjectWithAssoc): Project {
@@ -58,11 +82,22 @@ function mapProject(row: ProjectWithAssoc): Project {
     tagline: row.tagline,
     category: row.category,
     imageUrl: row.image_url,
+    source: row.source,
     association: {
+      slug: row.associations?.slug ?? "",
       name: row.associations?.name ?? "—",
       verified: row.associations?.verified ?? false,
       sinceYear: row.associations?.since_year ?? 0,
       location: row.associations?.location ?? "",
+      website: row.associations?.website ?? null,
+      trustScore: row.associations?.trust_score
+        ? Number(row.associations.trust_score)
+        : null,
+      overallScore: row.associations?.overall_score
+        ? Number(row.associations.overall_score)
+        : null,
+      grade: row.associations?.grade ?? null,
+      donEnConfiance: row.associations?.don_en_confiance ?? false,
     },
     goal: Number(row.goal_amount),
     raised: Number(row.raised_amount),
@@ -72,6 +107,8 @@ function mapProject(row: ProjectWithAssoc): Project {
     contractAddress: row.contract_address,
     chain: row.chain,
     stablecoin: row.stablecoin,
+    externalUrl: row.external_url,
+    externalDonationMethod: row.external_donation_method,
     status: row.status,
   };
 }
@@ -94,14 +131,16 @@ function mapEvent(row: LedgerEventWithProject): LedgerEvent {
 }
 
 const PROJECT_SELECT =
-  "*, associations ( name, verified, since_year, location )";
+  "*, associations ( slug, name, verified, since_year, location, website, trust_score, overall_score, grade, don_en_confiance )";
 
 export async function getProjects(): Promise<Project[]> {
   const { data, error } = await supabase
     .from("projects")
     .select(PROJECT_SELECT)
     .in("status", ["active", "completed"])
-    .order("created_at", { ascending: false });
+    // Native pilot first, then externals by raised desc
+    .order("source", { ascending: true })
+    .order("raised_amount", { ascending: false });
 
   if (error) throw new Error(`getProjects: ${error.message}`);
   return (data as unknown as ProjectWithAssoc[]).map(mapProject);

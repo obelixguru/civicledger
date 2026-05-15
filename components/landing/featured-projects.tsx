@@ -13,19 +13,26 @@ export function FeaturedProjects({ projects }: { projects: Project[] }) {
         <div className="flex flex-col items-end justify-between gap-6 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Campagnes en cours · vérifiées
+              Sélection éditoriale · scoring Pulse ≥ 70/100
             </p>
             <h2 className="mt-4 text-balance font-sans text-4xl font-medium leading-tight tracking-[-0.02em] sm:text-5xl">
-              Trois projets,{" "}
+              Un pilote on-chain,{" "}
               <span className="font-serif italic font-normal">
-                trois preuves vivantes
-              </span>{" "}
-              que ça marche.
+                deux ONG vérifiées
+              </span>
+              .
             </h2>
+            <p className="mt-4 max-w-xl text-pretty text-sm text-muted-foreground">
+              On démarre en mettant en avant des associations existantes au
+              score Pulse élevé — tu donnes sur leur site. Le projet
+              <span className="text-brand-emerald"> CIVIC LEDGER </span>
+              est notre pilote on-chain : tu donnes par carte, on te prouve où
+              chaque euro va.
+            </p>
           </div>
           <Button asChild variant="ghost" size="lg" className="self-start sm:self-end">
             <Link href="/projects">
-              Voir tous les projets
+              Voir tout le catalogue
               <ArrowRight className="size-4" />
             </Link>
           </Button>

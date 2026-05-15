@@ -35,19 +35,22 @@ export default async function ProjectsPage() {
           <div className="absolute inset-0 bg-mesh opacity-50" aria-hidden />
           <div className="relative mx-auto max-w-7xl px-6">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Catalogue · {projects.length} projets vérifiés
+              Catalogue · {projects.length} projets · Pulse ≥ 70/100
             </p>
             <h1 className="mt-4 max-w-3xl text-balance font-sans text-5xl font-medium leading-[1.02] tracking-[-0.025em] sm:text-6xl">
-              Choisis une cause,{" "}
+              10 associations vérifiées,{" "}
               <span className="font-serif italic font-normal text-brand-emerald">
-                vois ton don agir
+                un pilote on-chain
               </span>
               .
             </h1>
             <p className="mt-6 max-w-2xl text-pretty text-lg text-muted-foreground">
-              Chaque projet ci-dessous est porté par une association vérifiée.
-              Smart contract dédié, justificatifs publics, score de transparence
-              recalculé en continu.
+              Sur les 11 projets ci-dessous, dix sont portés par des
+              associations existantes au score Pulse ≥ 70/100 (don sur leur
+              propre site). Le projet badgé{" "}
+              <span className="font-medium text-brand-emerald">CIVIC LEDGER</span>{" "}
+              est notre pilote — paiement par carte, traçabilité on-chain au
+              centime.
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-2">

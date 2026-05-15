@@ -27,10 +27,7 @@ export function Hero({ events }: { events: LedgerEvent[] }) {
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-emerald" />
               </span>
               <span className="font-mono uppercase tracking-[0.14em]">
-                Registre public · v0.1
-              </span>
-              <span className="text-muted-foreground">
-                · 1 240 000 € distribués cette année
+                10 ONG vérifiées · 1 pilote on-chain
               </span>
             </Badge>
 
@@ -54,7 +51,7 @@ export function Hero({ events }: { events: LedgerEvent[] }) {
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Button asChild variant="emerald" size="xl">
                 <Link href="/projects">
-                  Découvrir les projets vérifiés
+                  Voir les 11 projets sélectionnés
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>

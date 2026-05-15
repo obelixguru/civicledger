@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
+  BadgeCheck,
   CheckCircle2,
   Clock,
   ExternalLink,
   MapPin,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
@@ -15,11 +17,11 @@ import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DonateCard } from "@/components/projects/donate-card";
+import { ExternalDonateCard } from "@/components/projects/external-donate-card";
 import {
   getEventsForProject,
   getProject,
   getProjectSlugs,
-  getRecentEvents,
 } from "@/lib/data/projects";
 import { formatEUR, shortHash } from "@/lib/utils";
 
@@ -50,14 +52,11 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [project, events] = await Promise.all([
-    getProject(slug),
-    getEventsForProject(slug, 10),
-  ]);
+  const project = await getProject(slug);
   if (!project) notFound();
 
-  const projectEvents =
-    events.length > 0 ? events : await getRecentEvents(3);
+  const isNative = project.source === "civicledger_native";
+  const events = isNative ? await getEventsForProject(slug, 10) : [];
 
   return (
     <>
@@ -79,17 +78,30 @@ export default async function ProjectDetailPage({
               <div className="lg:col-span-7">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{project.category}</Badge>
-                  {project.association.verified && (
+                  {isNative ? (
+                    <Badge variant="emerald">
+                      <Sparkles className="size-3" />
+                      Projet CIVIC LEDGER natif
+                    </Badge>
+                  ) : (
                     <Badge variant="emerald">
                       <ShieldCheck className="size-3" />
-                      Association vérifiée
+                      Source vérifiée par notre scoring
                     </Badge>
                   )}
-                  <Badge variant="outline">
-                    <span className="font-mono text-[10px] tracking-[0.14em]">
-                      {project.chain} · {project.stablecoin}
-                    </span>
-                  </Badge>
+                  {project.association.donEnConfiance && (
+                    <Badge variant="outline" className="gap-1.5">
+                      <BadgeCheck className="size-3" />
+                      Don en Confiance
+                    </Badge>
+                  )}
+                  {isNative && project.chain && (
+                    <Badge variant="outline">
+                      <span className="font-mono text-[10px] tracking-[0.14em]">
+                        {project.chain} · {project.stablecoin}
+                      </span>
+                    </Badge>
+                  )}
                 </div>
 
                 <h1 className="mt-5 text-balance font-sans text-4xl font-medium leading-[1.05] tracking-[-0.02em] sm:text-5xl">
@@ -129,88 +141,164 @@ export default async function ProjectDetailPage({
                   </div>
                 </div>
 
-                <div className="mt-12 grid gap-8 sm:grid-cols-2">
-                  <div>
-                    <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Le besoin
-                    </h2>
-                    <p className="mt-3 text-pretty text-base leading-relaxed text-foreground">
-                      Un projet concret, budgété ligne par ligne, validé par
-                      l'IA d'audit avant publication. Chaque dépense fera
-                      l'objet d'un justificatif et d'un décaissement traçable.
-                    </p>
-                  </div>
-                  <div>
-                    <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Le mécanisme
-                    </h2>
-                    <p className="mt-3 text-pretty text-base leading-relaxed text-foreground">
-                      Tes dons sont convertis en {project.stablecoin} et
-                      verrouillés dans un smart contract. Aucun transfert sans
-                      facture validée et photo de livraison datée.
-                    </p>
-                  </div>
-                </div>
+                {isNative ? (
+                  <>
+                    <div className="mt-12 grid gap-8 sm:grid-cols-2">
+                      <div>
+                        <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                          Le besoin
+                        </h2>
+                        <p className="mt-3 text-pretty text-base leading-relaxed text-foreground">
+                          Un projet concret, budgété ligne par ligne, validé par
+                          l'IA d'audit avant publication. Chaque dépense fera
+                          l'objet d'un justificatif et d'un décaissement
+                          traçable.
+                        </p>
+                      </div>
+                      <div>
+                        <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                          Le mécanisme
+                        </h2>
+                        <p className="mt-3 text-pretty text-base leading-relaxed text-foreground">
+                          Tes dons sont convertis en {project.stablecoin} et
+                          verrouillés dans un smart contract dédié. Aucun
+                          transfert sans facture validée et photo de livraison
+                          datée.
+                        </p>
+                      </div>
+                    </div>
 
-                <Separator className="my-12" />
+                    <Separator className="my-12" />
 
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight">
-                    Activité on-chain
-                  </h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Tous les événements liés à ce projet, en clair.
-                  </p>
+                    <div>
+                      <h2 className="text-2xl font-semibold tracking-tight">
+                        Activité on-chain
+                      </h2>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Tous les événements liés à ce projet, en clair.
+                      </p>
 
-                  <ul className="mt-8 space-y-3">
-                    {projectEvents.map((e) => (
-                      <li
-                        key={e.id}
-                        className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/15"
-                      >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 className="size-3.5 text-brand-emerald" />
-                            <p className="text-sm font-medium capitalize">
-                              {e.type.replace("_", " ")}
-                              {e.amount ? (
-                                <span className="ml-2 font-serif text-base">
-                                  {formatEUR(e.amount)}
-                                </span>
-                              ) : null}
+                      <ul className="mt-8 space-y-3">
+                        {events.map((e) => (
+                          <li
+                            key={e.id}
+                            className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/15"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle2 className="size-3.5 text-brand-emerald" />
+                                <p className="text-sm font-medium capitalize">
+                                  {e.type.replace("_", " ")}
+                                  {e.amount ? (
+                                    <span className="ml-2 font-serif text-base">
+                                      {formatEUR(e.amount)}
+                                    </span>
+                                  ) : null}
+                                </p>
+                              </div>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {e.detail}
+                              </p>
+                              <p className="mt-1.5 truncate font-mono text-[11px] text-muted-foreground/70">
+                                {shortHash(e.txHash, 12, 10)} · {e.actor}
+                              </p>
+                            </div>
+                            <a
+                              href="#"
+                              className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              Voir <ExternalLink className="size-3" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mt-12">
+                      <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Pourquoi on met en avant ce projet
+                      </h2>
+                      <p className="mt-3 text-pretty text-base leading-relaxed text-foreground">
+                        {project.association.name} a été passée à notre moteur
+                        de scoring (méthodo Pulse — 10 dimensions, score de
+                        confiance basé sur 5 critères : transparence financière,
+                        gouvernance, labels, conformité, mission).
+                      </p>
+                      <p className="mt-3 text-pretty text-base leading-relaxed text-muted-foreground">
+                        Trust score :{" "}
+                        <span className="font-medium text-foreground">
+                          {project.association.trustScore}/100
+                        </span>{" "}
+                        ({project.association.grade}). Au-dessus de notre seuil
+                        de publication (70).
+                      </p>
+                    </div>
+
+                    <Separator className="my-12" />
+
+                    <div>
+                      <h2 className="text-2xl font-semibold tracking-tight">
+                        Comment ton don est traité
+                      </h2>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Ce projet n'est <span className="text-foreground">pas</span>{" "}
+                        hébergé sur CivicLedger. Tu donnes directement à{" "}
+                        {project.association.name} via leur infrastructure habituelle.
+                      </p>
+                      <ul className="mt-6 space-y-3">
+                        {[
+                          {
+                            t: "Paiement",
+                            d: project.externalDonationMethod ??
+                              "Carte / chèque / virement",
+                          },
+                          {
+                            t: "Reçu fiscal",
+                            d: "Émis directement par l'association sous 30 j",
+                          },
+                          {
+                            t: "Traçabilité on-chain",
+                            d: "Non disponible (projet hors CivicLedger). Voir leurs comptes annuels publiés.",
+                          },
+                          {
+                            t: "Score réévalué",
+                            d: "Tous les 6 mois depuis les sources publiques (RNA, Cour des Comptes, Don en Confiance, presse).",
+                          },
+                        ].map((row) => (
+                          <li
+                            key={row.t}
+                            className="flex items-start gap-4 rounded-xl border border-border bg-card p-4"
+                          >
+                            <p className="min-w-32 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                              {row.t}
                             </p>
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {e.detail}
-                          </p>
-                          <p className="mt-1.5 truncate font-mono text-[11px] text-muted-foreground/70">
-                            {shortHash(e.txHash, 12, 10)} · {e.actor}
-                          </p>
-                        </div>
-                        <a
-                          href="#"
-                          className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          Voir <ExternalLink className="size-3" />
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                            <p className="text-sm text-foreground">{row.d}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
               </div>
 
               <aside className="lg:col-span-5">
                 <div className="lg:sticky lg:top-24">
-                  <DonateCard
-                    projectSlug={project.slug}
-                    raised={project.raised}
-                    goal={project.goal}
-                    donors={project.donors}
-                    transparencyScore={project.transparencyScore}
-                    contractAddress={project.contractAddress}
-                    chain={project.chain}
-                    stablecoin={project.stablecoin}
-                  />
+                  {isNative ? (
+                    <DonateCard
+                      projectSlug={project.slug}
+                      raised={project.raised}
+                      goal={project.goal}
+                      donors={project.donors}
+                      transparencyScore={project.transparencyScore}
+                      contractAddress={project.contractAddress ?? ""}
+                      chain={project.chain ?? ""}
+                      stablecoin={project.stablecoin ?? ""}
+                    />
+                  ) : (
+                    <ExternalDonateCard project={project} />
+                  )}
                 </div>
               </aside>
             </div>

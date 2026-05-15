@@ -8,11 +8,13 @@ export type ProjectCategory =
   | "Eau"
   | "Alimentation"
   | "Climat"
-  | "Logement";
+  | "Logement"
+  | "Solidarité";
 
 export type ChainName = "Polygon" | "Base" | "Solana";
 export type StablecoinName = "USDC" | "EURC";
 export type ProjectStatus = "draft" | "active" | "completed" | "refunded";
+export type ProjectSource = "external_showcase" | "civicledger_native";
 export type DonationStatus = "pending" | "succeeded" | "refunded";
 export type LedgerEventType =
   | "donation"
@@ -33,6 +35,13 @@ export type AssociationRow = {
   location: string;
   verified: boolean;
   since_year: number;
+  trust_score: number | null;
+  overall_score: number | null;
+  grade: string | null;
+  scoring_methodology: string | null;
+  website: string | null;
+  don_en_confiance: boolean;
+  scored_at: string | null;
   created_at: string;
 };
 
@@ -49,9 +58,12 @@ export type ProjectRow = {
   donor_count: number;
   ends_at: string;
   transparency_score: number;
-  contract_address: string;
-  chain: ChainName;
-  stablecoin: StablecoinName;
+  contract_address: string | null;
+  chain: ChainName | null;
+  stablecoin: StablecoinName | null;
+  source: ProjectSource;
+  external_url: string | null;
+  external_donation_method: string | null;
   status: ProjectStatus;
   created_at: string;
 };
@@ -222,6 +234,7 @@ export type Database = {
       chain_name: ChainName;
       stablecoin_name: StablecoinName;
       project_status: ProjectStatus;
+      project_source: ProjectSource;
       ledger_event_type: LedgerEventType;
       donation_status: DonationStatus;
       proof_validation: ProofValidation;

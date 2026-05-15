@@ -66,6 +66,22 @@ export async function POST(req: Request) {
       { status: 409 },
     );
   }
+  if (project.source !== "civicledger_native") {
+    return NextResponse.json(
+      {
+        error:
+          "Ce projet est hébergé par l'association elle-même. Donne directement sur leur site.",
+        externalUrl: project.external_url,
+      },
+      { status: 409 },
+    );
+  }
+  if (!project.contract_address || !project.chain || !project.stablecoin) {
+    return NextResponse.json(
+      { error: "Native project missing on-chain configuration" },
+      { status: 500 },
+    );
+  }
 
   // Pre-create a pending donation row so we have an ID to thread through Stripe
   const { data: donationData, error: dErr } = await admin
