@@ -133,6 +133,33 @@
   }
 }
 
+@layer components {
+  .form-input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    background-color: var(--background);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    outline: none;
+  }
+  .form-input::placeholder {
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+  .form-input:focus {
+    border-color: color-mix(in oklch, var(--foreground) 30%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--brand-emerald) 12%, transparent);
+  }
+  .form-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
 @layer utilities {
   .font-serif {
     font-family: var(--font-serif);

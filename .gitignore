@@ -36,3 +36,5 @@ yarn-error.log*
 # screenshots / scratch
 *.playwright-mcp/
 civicledger-*.png
+
+.vercel

@@ -67,6 +67,32 @@ export type LedgerEventRow = {
   occurred_at: string;
 };
 
+export type ApplicationStatus =
+  | "pending"
+  | "reviewing"
+  | "approved"
+  | "rejected";
+
+export type ApplicationRow = {
+  id: string;
+  name: string;
+  legal_form: string;
+  registration_number: string | null;
+  country: string;
+  city: string;
+  founded_year: number;
+  contact_name: string;
+  email: string;
+  website: string | null;
+  description: string;
+  estimated_annual_budget_eur: number | null;
+  status: ApplicationStatus;
+  ai_score: number | null;
+  reviewer_notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DonationRow = {
   id: string;
   project_id: string;
@@ -136,6 +162,30 @@ export type Database = {
           },
         ];
       };
+      applications: {
+        Row: ApplicationRow;
+        Insert: {
+          id?: string;
+          name: string;
+          legal_form: string;
+          registration_number?: string | null;
+          country: string;
+          city: string;
+          founded_year: number;
+          contact_name: string;
+          email: string;
+          website?: string | null;
+          description: string;
+          estimated_annual_budget_eur?: number | null;
+          status?: ApplicationStatus;
+          ai_score?: number | null;
+          reviewer_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ApplicationRow>;
+        Relationships: [];
+      };
       donations: {
         Row: DonationRow;
         Insert: {
@@ -175,6 +225,7 @@ export type Database = {
       ledger_event_type: LedgerEventType;
       donation_status: DonationStatus;
       proof_validation: ProofValidation;
+      application_status: ApplicationStatus;
     };
     CompositeTypes: Record<string, never>;
   };
