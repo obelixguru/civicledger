@@ -139,6 +139,16 @@ export async function getRecentEvents(limit = 5): Promise<LedgerEvent[]> {
   return (data as unknown as LedgerEventWithProject[]).map(mapEvent);
 }
 
+export async function getAllEvents(limit = 100): Promise<LedgerEvent[]> {
+  const { data, error } = await supabase
+    .from("ledger_events")
+    .select("*, projects ( slug )")
+    .order("occurred_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(`getAllEvents: ${error.message}`);
+  return (data as unknown as LedgerEventWithProject[]).map(mapEvent);
+}
+
 export async function getEventsForProject(
   slug: string,
   limit = 20,

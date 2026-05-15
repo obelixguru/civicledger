@@ -3,29 +3,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  ArrowRight,
   CheckCircle2,
   Clock,
   ExternalLink,
   MapPin,
   ShieldCheck,
-  Users,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { DonateCard } from "@/components/projects/donate-card";
 import {
   getEventsForProject,
   getProject,
   getProjectSlugs,
   getRecentEvents,
 } from "@/lib/data/projects";
-import { formatEUR, formatNumber, shortHash } from "@/lib/utils";
+import { formatEUR, shortHash } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -62,7 +58,6 @@ export default async function ProjectDetailPage({
 
   const projectEvents =
     events.length > 0 ? events : await getRecentEvents(3);
-  const pct = Math.min(100, Math.round((project.raised / project.goal) * 100));
 
   return (
     <>
@@ -206,91 +201,16 @@ export default async function ProjectDetailPage({
 
               <aside className="lg:col-span-5">
                 <div className="lg:sticky lg:top-24">
-                  <Card className="overflow-hidden p-0 shadow-[0_30px_80px_-25px_rgba(15,15,14,0.18)]">
-                    <div className="border-b border-border p-7">
-                      <div className="flex items-baseline justify-between">
-                        <p className="font-serif text-5xl tracking-tight">
-                          {formatEUR(project.raised, { compact: true })}
-                        </p>
-                        <span className="text-sm text-muted-foreground">
-                          / {formatEUR(project.goal, { compact: true })}
-                        </span>
-                      </div>
-                      <Progress value={pct} className="mt-4 h-2" />
-                      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>
-                          <span className="font-medium text-foreground">
-                            {pct}%
-                          </span>{" "}
-                          collectés
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Users className="size-3.5" />
-                          {formatNumber(project.donors)} donneurs
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-7">
-                      <div className="grid grid-cols-3 gap-2">
-                        {[20, 50, 100].map((amt) => (
-                          <button
-                            key={amt}
-                            className="rounded-xl border border-border bg-background py-3 text-sm font-medium transition-colors hover:border-foreground/30 hover:bg-secondary cursor-pointer"
-                          >
-                            {amt} €
-                          </button>
-                        ))}
-                      </div>
-                      <button className="mt-2 w-full rounded-xl border border-dashed border-border bg-background/60 py-3 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground cursor-pointer">
-                        Autre montant
-                      </button>
-
-                      <Button variant="emerald" size="xl" className="mt-5 w-full">
-                        Donner par carte
-                        <ArrowRight className="size-4" />
-                      </Button>
-                      <p className="mt-3 text-center text-[11px] text-muted-foreground">
-                        Paiement Stripe · Mint {project.stablecoin} ·
-                        Décaissement contre justificatif
-                      </p>
-                    </div>
-
-                    <div className="border-t border-border bg-muted/40 px-7 py-5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">
-                          Score de transparence
-                        </span>
-                        <span className="font-mono text-foreground">
-                          {project.transparencyScore}/100
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">
-                          Smart contract
-                        </span>
-                        <span className="font-mono text-foreground">
-                          {shortHash(project.contractAddress, 8, 6)}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Réseau</span>
-                        <span className="font-mono text-foreground">
-                          {project.chain}
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <div className="mt-4 rounded-2xl border border-dashed border-border bg-card/60 p-5">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      Garantie remboursement
-                    </p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Si l'association ne livre pas dans les 90 j, le smart
-                      contract te rembourse automatiquement sur ta carte.
-                    </p>
-                  </div>
+                  <DonateCard
+                    projectSlug={project.slug}
+                    raised={project.raised}
+                    goal={project.goal}
+                    donors={project.donors}
+                    transparencyScore={project.transparencyScore}
+                    contractAddress={project.contractAddress}
+                    chain={project.chain}
+                    stablecoin={project.stablecoin}
+                  />
                 </div>
               </aside>
             </div>

@@ -1,6 +1,6 @@
 // Hand-written types for the CivicLedger schema.
 // Mirrors the SQL migration `init_civicledger_schema`. Regenerate with
-// `npx supabase gen types typescript --project-id <id>` once you wire up auth.
+// `npx supabase gen types typescript --project-id <id>` once auth is wired.
 
 export type ProjectCategory =
   | "Éducation"
@@ -13,12 +13,18 @@ export type ProjectCategory =
 export type ChainName = "Polygon" | "Base" | "Solana";
 export type StablecoinName = "USDC" | "EURC";
 export type ProjectStatus = "draft" | "active" | "completed" | "refunded";
+export type DonationStatus = "pending" | "succeeded" | "refunded";
 export type LedgerEventType =
   | "donation"
   | "lock"
   | "proof_submitted"
   | "release"
   | "audit";
+export type ProofValidation =
+  | "pending"
+  | "ai_validated"
+  | "human_validated"
+  | "rejected";
 
 export type AssociationRow = {
   id: string;
@@ -61,6 +67,17 @@ export type LedgerEventRow = {
   occurred_at: string;
 };
 
+export type DonationRow = {
+  id: string;
+  project_id: string;
+  amount_eur: number;
+  donor_email: string | null;
+  donor_name: string | null;
+  stripe_payment_intent_id: string | null;
+  status: DonationStatus;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -71,10 +88,19 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<AssociationRow>;
+        Relationships: [];
       };
       projects: {
         Row: ProjectRow;
-        Insert: Omit<ProjectRow, "id" | "created_at" | "raised_amount" | "donor_count" | "transparency_score" | "status"> & {
+        Insert: Omit<
+          ProjectRow,
+          | "id"
+          | "created_at"
+          | "raised_amount"
+          | "donor_count"
+          | "transparency_score"
+          | "status"
+        > & {
           id?: string;
           created_at?: string;
           raised_amount?: number;
@@ -83,6 +109,15 @@ export type Database = {
           status?: ProjectStatus;
         };
         Update: Partial<ProjectRow>;
+        Relationships: [
+          {
+            foreignKeyName: "projects_association_id_fkey";
+            columns: ["association_id"];
+            isOneToOne: false;
+            referencedRelation: "associations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       ledger_events: {
         Row: LedgerEventRow;
@@ -91,7 +126,56 @@ export type Database = {
           occurred_at?: string;
         };
         Update: Partial<LedgerEventRow>;
+        Relationships: [
+          {
+            foreignKeyName: "ledger_events_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      donations: {
+        Row: DonationRow;
+        Insert: {
+          id?: string;
+          project_id: string;
+          amount_eur: number;
+          donor_email?: string | null;
+          donor_name?: string | null;
+          stripe_payment_intent_id?: string | null;
+          status?: DonationStatus;
+          created_at?: string;
+        };
+        Update: Partial<DonationRow>;
+        Relationships: [
+          {
+            foreignKeyName: "donations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
+    Views: Record<string, never>;
+    Functions: {
+      bump_project_totals: {
+        Args: { p_project_id: string; p_amount: number };
+        Returns: undefined;
+      };
+    };
+    Enums: {
+      project_category: ProjectCategory;
+      chain_name: ChainName;
+      stablecoin_name: StablecoinName;
+      project_status: ProjectStatus;
+      ledger_event_type: LedgerEventType;
+      donation_status: DonationStatus;
+      proof_validation: ProofValidation;
+    };
+    CompositeTypes: Record<string, never>;
   };
 };
